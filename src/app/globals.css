@@ -1,0 +1,5 @@
+
+* { box-sizing: border-box; }
+html, body, #__next { height: 100%; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+.font-serif { font-family: 'Georgia', ui-serif, serif; }

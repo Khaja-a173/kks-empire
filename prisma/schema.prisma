@@ -1,0 +1,118 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role { ADMIN MANAGER STAFF }
+enum BookingStatus { PENDING CONFIRMED SEATED CANCELLED }
+enum OrderStatus { NEW CONFIRMED IN_PROGRESS READY SERVED PAID REJECTED }
+enum GroupStatus { OPEN MERGED PAID }
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?  @unique
+  role      Role     @default(STAFF)
+  passHash  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DiningTable {
+  id            String   @id @default(cuid())
+  number        Int      @unique
+  qrSlug        String   @unique
+  isOccupied    Boolean  @default(false)
+  currentGroup  OrderGroup?
+}
+
+model OrderGroup {
+  id         String       @id @default(cuid())
+  tableId    String
+  table      DiningTable  @relation(fields: [tableId], references: [id])
+  guestPhone String?
+  status     GroupStatus  @default(OPEN)
+  orders     Order[]
+  createdAt  DateTime     @default(now())
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  tableId    String
+  table      DiningTable   @relation(fields: [tableId], references: [id])
+  name       String
+  phone      String
+  partySize  Int
+  notes      String?
+  status     BookingStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+}
+
+model MenuCategory {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  sortOrder Int        @default(0)
+  items     MenuItem[]
+}
+
+model MenuItem {
+  id          String        @id @default(cuid())
+  categoryId  String
+  category    MenuCategory  @relation(fields: [categoryId], references: [id])
+  name        String
+  description String?
+  priceCents  Int
+  imageUrl    String?
+  isAvailable Boolean       @default(true)
+  spicyLevel  Int?
+  createdAt   DateTime      @default(now())
+}
+
+model Order {
+  id                     String      @id @default(cuid())
+  groupId                String
+  group                  OrderGroup  @relation(fields: [groupId], references: [id])
+  tableId                String
+  table                  DiningTable @relation(fields: [tableId], references: [id])
+  status                 OrderStatus @default(NEW)
+  estimatedWaitMinutes   Int?
+  items                  OrderItem[]
+  createdAt              DateTime    @default(now())
+}
+
+model OrderItem {
+  id               String   @id @default(cuid())
+  orderId          String
+  order            Order    @relation(fields: [orderId], references: [id])
+  menuItemId       String
+  menuItem         MenuItem @relation(fields: [menuItemId], references: [id])
+  qty              Int      @default(1)
+  notes            String?
+  priceCentsAtSale Int
+}
+
+model StockOutage {
+  id         String   @id @default(cuid())
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  reason     String?
+  until      DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  channel   String
+  status    String
+  to        String
+  body      String
+  createdAt DateTime @default(now())
+}
