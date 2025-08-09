@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "installCommand": "pnpm install --prod --no-optional",
+  "installCommand": "pnpm install --prod --no-optional --ignore-scripts",
   "buildCommand": "pnpm build",
   "outputDirectory": ".next"
 }
